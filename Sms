@@ -1,0 +1,267 @@
+import tkinter as tk
+from tkinter import ttk
+from functools import partial
+from tkinter import messagebox
+import sqlite3
+root = tk.Tk()
+root.title('StudentManager')
+root.geometry('1000x550+30+30')
+t=tk.Label(root,text="Student Management System",bg='yellow')
+t.place(x=00,y=20,height=50,width=1000)
+con=sqlite3.connect("GUI.sqlite3")
+#cur=con.cursor()
+con.execute("create table IF NOT EXISTS Student131(Roll integer,Name varchar(20),Email text,Gander text,"
+            "Contact number,Dob Date)" )
+#=====================functions====================
+
+
+def add_student(r,n,e,g,c,d):
+    con=sqlite3.connect("GUI.sqlite3")
+    r1=r.get()
+    n1=n.get()
+    e1=e.get()
+    g1=g.get()
+    c1=c.get()
+    d1=d.get()
+    if r1=="" or n1=="":
+        messagebox.showerror("ERROR","Name and Roll Number fields are required")
+    else:
+      con.execute("insert into Student131 values({},'{}','{}','{}',{},'{}')".format(r1,n1,e1,g1,c1,d1))
+      con.commit()
+      fetch_data()
+      clear1()
+      con.close()
+      messagebox.showinfo("Sucess","Data added sucessfully")
+    return
+
+
+def fetch_data():
+    con = sqlite3.connect("GUI.sqlite3")
+    cur = con.cursor()
+    cur.execute("Select * from Student131")
+    rows = cur.fetchall()
+    if len(rows) != 0:
+        studenttable.delete(*studenttable.get_children())
+        for row in rows:
+            studenttable.insert('',0,values=row)
+        con.commit()
+    con.close()
+    return
+
+
+def clear():
+    Roll_no_var.set("")
+    Name_var.set("")
+    Email_var.set("")
+    Gender_var.set("")
+    Contact_var.set("")
+    Dob_var.set("")
+    return
+
+
+def clear1():
+    Roll_no_var.set("")
+    Name_var.set("")
+    Email_var.set("")
+    Gender_var.set("")
+    Contact_var.set("")
+    Dob_var.set("")
+    return
+
+
+def get_cursor(event):
+    cursor_row = studenttable.focus()
+    contents = studenttable.item(cursor_row)
+    row=contents['values']
+    #print(row)
+    Roll_no_var.set(row[0])
+    Name_var.set(row[1])
+    Email_var.set(row[2])
+    Gender_var.set(row[3])
+    Contact_var.set(row[4])
+    Dob_var.set(row[5])
+    return
+
+
+def update_student(r,n,e,g,c,d):
+    con = sqlite3.connect("GUI.sqlite3")
+    #cur = con.cursor()
+    #con.execute("create table IF NOT EXISTS Student131(Roll integer,Name varchar(20),Email text,Gander text,Contact number,Dob integer)" )
+    con.rollback()
+    r1 = r.get()
+    n1 = n.get()
+    e1 = e.get()
+    g1 = g.get()
+    c1 = c.get()
+    d1 = d.get()
+    con.execute("update  Student131 set Roll={},Name='{}',Email='{}',Gander='{}',Contact={},Dob='{}' where Roll={}".format(r1,n1,e1,g1,c1,d1,r1))
+    con.commit()
+    fetch_data()
+    clear1()
+    con.close()
+    messagebox.showinfo("Updated","Update successfull!")
+    return
+
+
+def delete(r):
+    r1=r.get()
+    con = sqlite3.connect("GUI.sqlite3")
+    con.rollback()
+    cur = con.cursor()
+    cur.execute("delete from Student131 where Roll={}".format(r1))
+    con.commit()
+    fetch_data()
+    clear1()
+    con.close()
+    return
+
+
+def search_data(sby,txt):
+    sb=sby.get()
+    tx=txt.get()
+    if sb=='Roll':
+        con = sqlite3.connect("GUI.sqlite3")
+        cur = con.cursor()
+        cur.execute("Select * from Student131 where Roll={}".format(tx))
+        rows = cur.fetchall()
+        if len(rows)==0:
+            messagebox.showerror("Error","{} Not Found".format(tx))
+        elif len(rows) != 0:
+            studenttable.delete(*studenttable.get_children())
+            for row in rows:
+                    studenttable.insert('',0,values=row)
+                    con.commit()
+        con.close()
+        search_txt.set("")
+        search_by.set("")
+    if sb=='Name':
+        con = sqlite3.connect("GUI.sqlite3")
+        cur = con.cursor()
+        cur.execute(" select * from Student131 where Name='{}'".format(tx))
+        rows = cur.fetchall()
+        if len(rows)==0:
+            messagebox.showerror("Error","{} Not Found".format(tx))
+        elif len(rows) != 0:
+            studenttable.delete(*studenttable.get_children())
+            for row in rows:
+                studenttable.insert('',0,values=row)
+                con.commit()
+        con.close()
+        search_txt.set("")
+        search_by.set("")
+    return
+
+
+def show_data():
+    fetch_data()
+    return
+
+
+#=============variabels===========================
+Roll_no_var = tk.StringVar()
+Name_var = tk.StringVar()
+Email_var = tk.StringVar()
+Gender_var = tk.StringVar()
+Contact_var = tk.StringVar()
+Dob_var = tk.StringVar()
+search_by = tk.StringVar()
+search_txt = tk.StringVar()
+
+#====================================manage frame========================================
+managef = tk.Frame(root,bd=4,bg='CRIMSON')
+managef.place(x=20,y=100,width=350,height=370)
+l1 = tk.Label(managef,text='Manage Student')
+l1.place(x=120,y=10,height=30)
+rl = tk.Label(managef,text='Roll.no',bg='crimson')
+rl.place(x=10,y=50,height=20)
+nl = tk.Label(managef,text='Name',bg='crimson')
+nl.place(x=10,y=80,height=20)
+el = tk.Label(managef,text='Email id.',bg='crimson')
+el.place(x=10,y=110,height=20)
+gl = tk.Label(managef,text='Gender',bg='crimson')
+gl.place(x=10,y=140,height=20)
+cl = tk.Label(managef,text='Contact NO.',bg='crimson')
+cl.place(x=10,y=170,height=20)
+dl = tk.Label(managef,text='D.O.B',bg='crimson')
+dl.place(x=10,y=200,height=20)
+al = tk.Label(managef,text='Address',bg='crimson')
+al.place(x=10,y=230,height=20)
+
+rEntry=tk.Entry(managef,textvariable=Roll_no_var)
+rEntry.place(x=190,y=50,width=130,height=20)
+nEntry=tk.Entry(managef,textvariable=Name_var)
+nEntry.place(x=190,y=80,width=130,height=20)
+eEntry=tk.Entry(managef,textvariable=Email_var)
+eEntry.place(x=190,y=110,width=130,height=20)
+cEntry=tk.Entry(managef,textvariable=Contact_var)
+cEntry.place(x=190,y=170,width=130,height=20)
+dEntry=tk.Entry(managef,textvariable=Dob_var)
+dEntry.place(x=190,y=200,width=130,height=20)
+atext=tk.Text(managef)
+atext.place(x=190,y=230,width=130,height=50)
+gcombo=ttk.Combobox(managef,textvariable=Gender_var)
+gcombo['values']=("Male","Female","Other")
+gcombo.place(x=190,y=140,width=130,height=20)
+
+#=======================buttonFrame====================
+bf=tk.Frame(managef,bd=4,bg='pink')
+bf.place(x=20,y=300,height=50,width=300)
+add_student = partial(add_student,Roll_no_var,Name_var,Email_var,Gender_var,Contact_var,Dob_var)
+add=tk.Button(bf,text='ADD',bg='blue',command=add_student)
+add.place(x=10,y=10,width=60,height=30)
+update_student=partial(update_student,Roll_no_var,Name_var,Email_var,Gender_var,Contact_var,Dob_var)
+update=tk.Button(bf,text='UPDATE',bg='blue',command=update_student)
+update.place(x=80,y=10,width=60,height=30)
+delete = partial(delete,Roll_no_var)
+dele=tk.Button(bf,text='DELETE',bg='blue',command=delete)
+dele.place(x=150,y=10,width=60,height=30)
+clear=partial(clear)
+clear=tk.Button(bf,text='CLEAR',bg='blue',command=clear)
+clear.place(x=220,y=10,width=60,height=30)
+#======================================Detail Frame========================================
+detail_frame=tk.Frame(root,bd=4,bg='crimson')
+detail_frame.place(x=400,y=100,width=580,height=370)
+lblsearch=tk.Label(detail_frame,bg='crimson',text='Search by')
+lblsearch.place(x=20,y=20,width=55)
+combo_search=ttk.Combobox(detail_frame,textvariable=search_by)
+combo_search['values']=("Roll","Name")
+combo_search.place(x=85,y=20,width=80)
+ent=tk.Entry(detail_frame,textvariable=search_txt)
+ent.place(x=190,y=20,width=90)
+search_data=partial(search_data,search_by,search_txt)
+searchbtn=tk.Button(detail_frame,text="Search",command=search_data)
+searchbtn.place(x=420,y=20,width=60)
+show_data=partial(show_data)
+showbtn=tk.Button(detail_frame,text="ShowAll",command=show_data)
+showbtn.place(x=490,y=20,width=60)
+#=================Tableframe==================
+t_frame=tk.Frame(detail_frame,bd=4,bg='crimson')
+t_frame.place(x=20,y=50,width=540,height=300)
+scrol_x=tk.Scrollbar(t_frame,orient='horizontal')
+
+scrol_y=tk.Scrollbar(t_frame,orient='vertical')
+
+studenttable=ttk.Treeview(t_frame,column=("Roll","Name","Email","Gender","Contact","Dob","Address"),xscollcommand=scrol_x.set(first=10,last=10),yscollcommand=scrol_y.set(first=10,last=10))
+scrol_x.place(x=0,y=280,height=20,width=540)
+scrol_y.place(x=520,y=0,width=20,height=300)
+scrol_x.config(command=studenttable.xview)
+scrol_y.config(command=studenttable.yview)
+studenttable.heading('Roll',text='Rollnumber')
+studenttable.heading('Name',text='name')
+studenttable.heading("Email",text="Emailid")
+studenttable.heading("Gender",text="Gender")
+studenttable.heading("Contact",text='ContactNo')
+studenttable.heading("Dob",text='dob')
+studenttable.heading("Address",text='Address')
+studenttable['show']='headings'
+studenttable.column("Roll",width=30)
+studenttable.column("Name",width=50)
+studenttable.column("Email",width=80)
+studenttable.column("Gender",width=40)
+studenttable.column("Contact",width=60)
+studenttable.column("Dob",width=50)
+studenttable.column("Address",width=100)
+studenttable.place(x=0,y=0,width=520,height=280)
+fetch_data()
+studenttable.bind('<ButtonRelease-1>',get_cursor)
+root.mainloop()
